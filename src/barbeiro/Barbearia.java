@@ -2,11 +2,20 @@ package barbeiro;
 
 public class Barbearia {
 	public int cadeirasDisponiveis;
+	private boolean barbeiroDormindo;
 	private int cadeiras;
 	
 	public Barbearia (int cadeiras) {
 		this.cadeiras = cadeiras;
 		cadeirasDisponiveis = cadeiras;
+		barbeiroDormindo = true;
+	}
+	
+	public synchronized void entrar(Cliente c){
+		if(barbeiroDormindo) {
+			System.out.println("Cliente "+c.getNome()+" acordou o barbeiro!");
+		}
+		notifyAll();
 	}
 	
 	public synchronized boolean temCadeiraDisponivel(Cliente c) throws InterruptedException{

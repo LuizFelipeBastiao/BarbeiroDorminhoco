@@ -18,11 +18,9 @@ public class Cliente extends Thread{
 				if(barbearia.temCadeiraDisponivel(this)) {
 					barbearia.sentarCadeira(this);
 				}else {
-					System.out.println("Cliente "+nome+" nao achou cadeira e foi embora.");
+					System.out.println("Cliente "+nome+" nao achou uma cadeira livre e foi embora.");
 					return;
 				}
-					
-				
 			}
 			
 			synchronized(barbeiro){
