@@ -1,63 +1,49 @@
 package barbeiro;
 
-public class Barbeiro extends Thread{
-	private String nome;
-	private boolean dormindo = false;
-	private boolean cortandoCabelo = false;
-	private Barbearia barbearia;
-	
+/**
+ * Thread do barbeiro. Em loop:
+ *  1) pede o proximo cliente ao monitor (dorme se nao houver);
+ *  2) simula o corte;
+ *  3) avisa o monitor que terminou.
+ */
+public class Barbeiro extends Thread {
+
+	private final String nome;
+	private final Barbearia barbearia;
+
 	public Barbeiro(String nome, Barbearia barbearia) {
 		this.nome = nome;
 		this.barbearia = barbearia;
 	}
-	
-	public void run() {
-		try {
-			synchronized(barbearia) {
-				while(!barbearia.temClientes()) {
-					System.out.println("Sem clientes, barbeiro esta dormindo...");
-					tirarSoneca();
-					barbearia.wait();
-				}
-			}
-		}catch(InterruptedException e){
-			Thread.currentThread().interrupt();
-		}
-	}
-	
-	public synchronized void atender(Cliente cliente) throws InterruptedException{
-		System.out.println("Atendendo o cliente "+ cliente.getNome());
-		cortandoCabelo = true;
-		for(int i =1 ; i<=3;i++) {
-			System.out.println("Cortando o cabelo do cliente "+ cliente.getNome()+"...(tic tic)");
-			Thread.sleep(500);
-		}
-		desocupar();
-	}
-	
+
 	public String getNome() {
 		return nome;
 	}
-	
-	public boolean estaDormindo() {
-		return dormindo;
+
+	@Override
+	public void run() {
+		try {
+			while (!Thread.currentThread().isInterrupted()) {
+				Cliente c = barbearia.proximoCliente();
+				if (c == null) {
+					// barbearia fechada
+					break;
+				}
+				cortar(c);
+				barbearia.terminarCorte(c);
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		System.out.println("Barbeiro " + nome + " foi para casa.");
 	}
-	
-	public synchronized boolean estaOcupado() throws InterruptedException{
-		
-		return cortandoCabelo;
-	}
-	
-	public synchronized void desocupar() throws InterruptedException{
-		cortandoCabelo = false;
-		notifyAll();
-	}
-	
-	public void acordar() {
-		dormindo = false;
-	}
-	
-	public void tirarSoneca() {
-		dormindo = true;
+
+	private void cortar(Cliente c) throws InterruptedException {
+		System.out.println("Barbeiro " + nome + " comecou a cortar o cabelo de "
+			+ c.getNome() + ".");
+		for (int i = 1; i <= 3; i++) {
+			System.out.println("Cortando cabelo de " + c.getNome() + "... (tic tic)");
+			Thread.sleep(1500);
+		}
 	}
 }

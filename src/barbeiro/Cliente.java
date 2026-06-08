@@ -1,58 +1,30 @@
 package barbeiro;
 
-public class Cliente extends Thread{
-	
-	private String nome;
-	private Barbeiro barbeiro;
-	private Barbearia barbearia;
-	
-	public Cliente(String nome, Barbeiro barbeiro, Barbearia barbearia) {
+/**
+ * Thread do cliente. So conversa com o monitor (Barbearia):
+ *  - se houver cadeira, senta e espera o atendimento;
+ *  - se nao, vai embora imediatamente.
+ */
+public class Cliente extends Thread {
+
+	private final String nome;
+	private final Barbearia barbearia;
+
+	public Cliente(String nome, Barbearia barbearia) {
 		this.nome = nome;
-		this.barbeiro = barbeiro;
-		this.barbearia= barbearia;
+		this.barbearia = barbearia;
 	}
-	
-	public void run() {
-		try {
-			synchronized(barbearia) {
-				if(barbearia.temCadeiraDisponivel(this)) {
-					barbearia.sentarCadeira(this);
-				}else {
-					System.out.println("Cliente "+nome+" nao achou uma cadeira livre e foi embora.");
-					return;
-				}
-			}
-			
-			synchronized(barbeiro){
-				if(barbeiro.estaDormindo()) {
-					barbeiro.acordar();
-					System.out.println("Barbeiro acordou!");
-				}
-			
-				while(barbeiro.estaOcupado()) {
-					System.out.println("Cliente "+nome+" esta sentado na cadeira e esperando o barbeiro...");
-					barbeiro.wait();
-				}
-					
-				barbeiro.atender(this);
-				barbeiro.desocupar();
-				barbearia.sairCadeira(this);
-			}
-				
-			System.out.println("Cliente "+nome+" foi atendido e foi embora.");
-		}
-		catch(InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-		
-	}
-			
+
 	public String getNome() {
 		return nome;
 	}
-	
-	
-	
-	
 
+	@Override
+	public void run() {
+		try {
+			barbearia.entrar(this);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
 }
